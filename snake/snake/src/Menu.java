@@ -39,20 +39,19 @@ public class Menu extends JFrame implements ActionListener {
         play.setBackground(Color.ORANGE);
         play.addActionListener(this);
         menuFrame.add(play);
+
+//        JButton play2 = new JButton("Play (no walls)");
+//        play2.setBounds(300,50,200,50);
+//        play.setFont(new Font("ink free", Font.BOLD, 30));
+//        play.setBorder(BorderFactory.createLineBorder(Color.black, 3));
+//        play.setBackground(Color.ORANGE);
+//        play.addActionListener(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         new GameFrame();
         menuFrame.dispose();
-
     }
-
-//    public void setButton(){
-//        play = new JButton("Play");
-//        play.setBounds(50, 100,95,30);
-//
-//    }
-
 
 }
