@@ -11,8 +11,27 @@ public class Menu extends JFrame implements ActionListener {
 
     private JFrame menuFrame;
 
+    public Menu(int aantalAppels){
+        this();
+    }
+
     public Menu() {
         initialize();
+        setButton();
+    }
+
+    public void initialize(){
+        this.menuFrame = new JFrame();
+        this.setBackground(Color.BLACK);
+        menuFrame.setTitle("Menu");
+        menuFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        menuFrame.setSize(1000, 1000);
+        menuFrame.setVisible(true);
+        menuFrame.setLocationRelativeTo(null);
+        menuFrame.setResizable(false);
+    }
+
+    public void setButton(){
         JButton play = new JButton("Play");
         play.setBounds(120,50,100,50);
         play.setFont(new Font("ink free", Font.BOLD, 30));
@@ -20,17 +39,6 @@ public class Menu extends JFrame implements ActionListener {
         play.setBackground(Color.ORANGE);
         play.addActionListener(this);
         menuFrame.add(play);
-    }
-
-
-    public void initialize(){
-        menuFrame = new JFrame();
-        menuFrame.setTitle("Menu");
-        menuFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        menuFrame.setSize(1000, 1000);
-        menuFrame.setVisible(true);
-        menuFrame.setLocationRelativeTo(null);
-        menuFrame.setResizable(false);
     }
 
     @Override

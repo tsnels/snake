@@ -6,6 +6,7 @@ import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
 
+    GameFrame gameFrame;
     static final int SCREEN_WIDTH = 1000;
     static final int SCREEN_HEIGHT = 1000;
     static final int UNIT_SIZE = 25;
@@ -23,7 +24,8 @@ public class GamePanel extends JPanel implements ActionListener {
     Random random;
 
 
-    GamePanel() {
+    GamePanel(GameFrame gameFrame) {
+        this.gameFrame = gameFrame;
         random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
@@ -143,6 +145,8 @@ public class GamePanel extends JPanel implements ActionListener {
         g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2, g.getFont().getSize());
         //play again
 
+        new Menu(applesEaten);
+        gameFrame.dispose();
 
 //        JFrame f=new JFrame("Button Example");
 //        JButton b=new JButton("Click Here");

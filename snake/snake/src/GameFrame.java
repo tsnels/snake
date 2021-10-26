@@ -4,7 +4,7 @@ public class GameFrame extends JFrame {
 
     GameFrame(){
 
-        this.add(new GamePanel());
+        this.add(new GamePanel(this));
         this.setTitle("snake");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
@@ -12,7 +12,4 @@ public class GameFrame extends JFrame {
         this.setVisible(true);
         this.setLocationRelativeTo(null);
     }
-
-
 }
-
