@@ -1,35 +1,45 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.nio.channels.AlreadyConnectedException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
 
+    boolean muren;
     GameFrame gameFrame;
     static final int SCREEN_WIDTH = 1200;
     static final int SCREEN_HEIGHT = 700;
     static final int UNIT_SIZE = 25;
     static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
-    static int DELAY = 60;
+    int DELAY;
     final int x[] = new int[GAME_UNITS];
     final int y[] = new int[GAME_UNITS];
     int bodyParts = 8;
     int applesEaten;
     int appleX;
     int appleY;
-    int wallX[] = new int[]{UNIT_SIZE * 10, UNIT_SIZE * 11, UNIT_SIZE * 12, UNIT_SIZE * 13, UNIT_SIZE * 14, UNIT_SIZE * 15, UNIT_SIZE * 18, UNIT_SIZE * 19, UNIT_SIZE * 20, UNIT_SIZE * 21, UNIT_SIZE * 22, UNIT_SIZE * 23};
-    int wallY[] = new int[] {UNIT_SIZE * 10, UNIT_SIZE * 17};
+    int wallX[] = new int[]{
+            UNIT_SIZE * 1, UNIT_SIZE * 2, UNIT_SIZE * 3, UNIT_SIZE * 4, UNIT_SIZE * 5, UNIT_SIZE * 6,
+            UNIT_SIZE * 10, UNIT_SIZE * 11, UNIT_SIZE * 12, UNIT_SIZE * 13, UNIT_SIZE * 14, UNIT_SIZE * 15,
+            UNIT_SIZE * 20, UNIT_SIZE * 21, UNIT_SIZE * 22, UNIT_SIZE * 23, UNIT_SIZE * 24, UNIT_SIZE * 25,
+            UNIT_SIZE * 30, UNIT_SIZE * 31, UNIT_SIZE * 32, UNIT_SIZE * 33, UNIT_SIZE * 34, UNIT_SIZE * 35
+    };
+    //    int wallX2[] = new int[]{UNIT_SIZE * 17, UNIT_SIZE * 18, UNIT_SIZE * 19, UNIT_SIZE * 20, UNIT_SIZE * 21, UNIT_SIZE * 22};
+    int wallY[] = new int[]{UNIT_SIZE * 10, UNIT_SIZE * 20};
+
     char direction = 'R';
+    char nextDirection = 'R';
+    char nextDirection2 = 'R';
     boolean running = false;
     Timer timer;
     Random random;
+    int ticks = 0;
+    boolean wallToRight = true;
+    int wallSteps = 0;
 
 
-
-    GamePanel(GameFrame gameFrame) {
+    GamePanel(GameFrame gameFrame, boolean muren) {
+        this.muren = muren;
         this.gameFrame = gameFrame;
         random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -40,10 +50,9 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
 
-
     public void startGame() {
 //        newWall();
-        DELAY = 60;
+        DELAY = 65;
         newApple();
         running = true;
         timer = new Timer(DELAY, this);
@@ -61,8 +70,8 @@ public class GamePanel extends JPanel implements ActionListener {
 //                    g.drawLine(i * UNIT_SIZE, 0, i * UNIT_SIZE, SCREEN_HEIGHT);
 //                    g.drawLine(0, i * UNIT_SIZE, SCREEN_WIDTH, i * UNIT_SIZE);
 //                }
-                g.setColor(Color.red);
-                g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
+            g.setColor(Color.red);
+            g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
 
             g.setColor(Color.white);
             for (var i = 0; i < (wallX.length); i++) {
@@ -72,21 +81,21 @@ public class GamePanel extends JPanel implements ActionListener {
             }
 
 
-                for (int i = 0; i < bodyParts; i++) {
-                    if (i == 0) {
-                        g.setColor(Color.green);
-                        g.fillOval(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
-                    } else {
-                        g.setColor(new Color(45, 180, 0));
+            for (int i = 0; i < bodyParts; i++) {
+                if (i == 0) {
+                    g.setColor(Color.green);
+                    g.fillOval(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
+                } else {
+                    g.setColor(new Color(45, 180, 0));
 //                        g.setColor(new Color(random.nextInt(255), random.nextInt(255), random.nextInt(255)));
-                        g.fillOval(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
-                    }
+                    g.fillOval(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 }
+            }
             g.setColor(Color.white);
-            g.setFont( new Font("ink free", Font.BOLD, 35));
+            g.setFont(new Font("ink free", Font.BOLD, 35));
             FontMetrics metrics = getFontMetrics(g.getFont());
             g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2, g.getFont().getSize());
-            } else {
+        } else {
             gameOver(g);
         }
     }
@@ -104,7 +113,8 @@ public class GamePanel extends JPanel implements ActionListener {
                         appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
                     }
                 }
-        }} while (appleInWall == true);
+            }
+        } while (appleInWall == true);
 
     }
 
@@ -128,12 +138,15 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void checkApple() {
-        if((x[0] == appleX) && (y[0] == appleY)){
-            bodyParts ++;
-            applesEaten ++;
+        if ((x[0] == appleX) && (y[0] == appleY)) {
+            bodyParts++;
+            applesEaten++;
             newApple();
-            if (applesEaten == 10) {
-                DELAY -= 10;
+            if (applesEaten % 5 == 0 && applesEaten > 0) {
+                DELAY = DELAY - 10;
+//                timer.stop();
+//                timer = new Timer(DELAY, this);
+//                timer.start();
             }
         }
     }
@@ -148,8 +161,10 @@ public class GamePanel extends JPanel implements ActionListener {
         // checks if head touches a white wall.
         for (var i = 0; i < wallX.length; i++) {
             for (var ii = 0; ii < wallY.length; ii++) {
-                if (x[0] == wallX[i] && y[0] == wallY[ii]) {
-                    running = false;
+                for (int iBody = bodyParts; iBody >= 0; iBody--) {
+                    if ((x[iBody] == wallX[i] && y[iBody] == wallY[ii])) {
+                        running = false;
+                    }
                 }
             }
         }
@@ -157,19 +172,23 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // checks if head touches left border.
         if (x[0] < 0) {
-            running = false;
+            x[0] = SCREEN_WIDTH - 25;
+//            running = false;
         }
         //check if head touches richt border
-        if (x[0] > SCREEN_WIDTH) {
-            running = false;
+        if (x[0] >= SCREEN_WIDTH) {
+            x[0] = 0;
+//            running = false;
         }
         // check if head touches top border
         if (y[0] < 0) {
-            running = false;
+            y[0] = SCREEN_HEIGHT - 25;
+//            running = false;
         }
         // check if head touches bottom
-        if (y[0] > SCREEN_HEIGHT) {
-            running = false;
+        if (y[0] >= SCREEN_HEIGHT) {
+            y[0] = 0;
+//            running = false;
         }
 
         if (!running) {
@@ -180,17 +199,18 @@ public class GamePanel extends JPanel implements ActionListener {
     public void gameOver(Graphics g) {
         // Game over txt
         g.setColor(Color.red);
-        g.setFont( new Font("ink free", Font.BOLD, 75));
+        g.setFont(new Font("ink free", Font.BOLD, 75));
         FontMetrics metrics = getFontMetrics(g.getFont());
-        g.drawString("GAME OVER", (SCREEN_WIDTH - metrics.stringWidth("GAME OVER")) / 2, SCREEN_HEIGHT/2);
+        g.drawString("GAME OVER", (SCREEN_WIDTH - metrics.stringWidth("GAME OVER")) / 2, SCREEN_HEIGHT / 2);
         // score bij game over text
         g.setColor(Color.red);
-        g.setFont( new Font("ink free", Font.BOLD, 40));
+        g.setFont(new Font("ink free", Font.BOLD, 40));
         FontMetrics metric2 = getFontMetrics(g.getFont());
         g.drawString("Score: " + applesEaten, (SCREEN_WIDTH - metrics.stringWidth("Score: " + applesEaten)) / 2, g.getFont().getSize());
         //play again
 
-        new Menu(applesEaten);
+//        new Menu(applesEaten);
+        new Menu();
         gameFrame.dispose();
 
 //        JFrame f=new JFrame("Button Example");
@@ -205,46 +225,98 @@ public class GamePanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+
         if (running) {
+            if (direction != nextDirection){ // switch de richting van de slang.
+                direction = nextDirection;
+                nextDirection = nextDirection2;
+                nextDirection2 = nextDirection;
+            } else {
+                direction = nextDirection;
+            }
+
             move();
             checkApple();
             checkCollisions();
+
+            ticks++;
+            if (ticks == 10) {
+                ticks = 0;
+                wallSteps++;
+                if (wallToRight) { // beweegt de muur naar rechts
+                    for (var i = 0; i < wallX.length; i++) {
+                        wallX[i] += 25;
+                        if (wallSteps == 10) {
+                            wallToRight = false;
+                            wallSteps = 0;
+                        }
+                    }
+                } else {
+                    for (var i = 0; i < wallX.length; i++) { // beweegt de muur naar links
+//                        wallToRight? (wallX[i] -= 25) : (wallX[i] += 25);
+                        wallX[i] -= 25;
+                        if (wallSteps == 10) {
+                            wallToRight = true;
+                            wallSteps = 0;
+                        }
+                    }
+                }
+            }
+            repaint();
         }
-        repaint();
     }
-
-
-//    @Override
-//    public void actionPerformed(ActionEvent e) {
-//
-//    }
 
     public class MyKeyAdapter extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
-                    if (direction != 'R') {
-                        direction = 'L';
+//                    if (direction != 'R') {
+                    if ((direction != 'R' && nextDirection != 'R') || (nextDirection == 'U' || nextDirection == 'D'))  {
+                        if (direction == nextDirection) {
+                            nextDirection = 'L';
+                            nextDirection2 = 'L';
+                        } else {
+                            nextDirection2 = 'L';
+                        }
                     }
                     break;
-                case KeyEvent.VK_RIGHT:
-                    if (direction != 'L') {
-                        direction = 'R';
-                    }
-                    break;
-                case KeyEvent.VK_UP:
-                    if (direction != 'D') {
-                        direction = 'U';
-                    }
-                    break;
-                case KeyEvent.VK_DOWN:
-                    if (direction != 'U') {
-                        direction = 'D';
-                    }
-                    break;
-            }
 
+                case KeyEvent.VK_RIGHT:
+//                    if (direction != 'L') {
+                    if ((direction != 'L' && nextDirection != 'L') || (nextDirection == 'U' || nextDirection == 'D')) {
+                        if (direction == nextDirection) {
+                            nextDirection = 'R';
+                            nextDirection2 = 'R';
+                        } else {
+                            nextDirection2 = 'R';
+                        }
+                    }
+                    break;
+
+                case KeyEvent.VK_UP:
+//                    if (direction != 'D') {
+                    if ((direction != 'D' && nextDirection != 'D') || (nextDirection == 'L' || nextDirection == 'R')) {
+                        if (direction == nextDirection) {
+                            nextDirection = 'U';
+                            nextDirection2 = 'U';
+                        } else {
+                            nextDirection2 = 'U';
+                        }
+                    }
+                    break;
+
+                case KeyEvent.VK_DOWN:
+//                    if (direction != 'U') {
+                    if ((direction != 'U' && nextDirection != 'U') || (nextDirection == 'L' || nextDirection == 'R')) {
+                        if (direction == nextDirection) {
+                            nextDirection = 'D';
+                            nextDirection2 = 'D';
+                        } else {
+                            nextDirection2 = 'D';
+                        }
+                    }
+            }
         }
     }
 }

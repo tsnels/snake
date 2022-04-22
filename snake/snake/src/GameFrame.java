@@ -2,9 +2,10 @@ import javax.swing.*;
 
 public class GameFrame extends JFrame {
 
-    GameFrame(){
+    GameFrame(boolean muren){
 
-        this.add(new GamePanel(this));
+        this.add(new GamePanel(this, muren));
+//        this.setLayout(null);
         this.setTitle("snake");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
