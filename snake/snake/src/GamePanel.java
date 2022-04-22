@@ -2,26 +2,31 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.nio.channels.AlreadyConnectedException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class GamePanel extends JPanel implements ActionListener {
 
     GameFrame gameFrame;
-    static final int SCREEN_WIDTH = 1000;
-    static final int SCREEN_HEIGHT = 1000;
+    static final int SCREEN_WIDTH = 1200;
+    static final int SCREEN_HEIGHT = 700;
     static final int UNIT_SIZE = 25;
     static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / UNIT_SIZE;
-    static final int DELAY = 65;
+    static int DELAY = 60;
     final int x[] = new int[GAME_UNITS];
     final int y[] = new int[GAME_UNITS];
-    int bodyParts = 6;
+    int bodyParts = 8;
     int applesEaten;
     int appleX;
     int appleY;
+    int wallX[] = new int[]{UNIT_SIZE * 10, UNIT_SIZE * 11, UNIT_SIZE * 12, UNIT_SIZE * 13, UNIT_SIZE * 14, UNIT_SIZE * 15, UNIT_SIZE * 18, UNIT_SIZE * 19, UNIT_SIZE * 20, UNIT_SIZE * 21, UNIT_SIZE * 22, UNIT_SIZE * 23};
+    int wallY[] = new int[] {UNIT_SIZE * 10, UNIT_SIZE * 17};
     char direction = 'R';
     boolean running = false;
     Timer timer;
     Random random;
+
 
 
     GamePanel(GameFrame gameFrame) {
@@ -37,6 +42,8 @@ public class GamePanel extends JPanel implements ActionListener {
 
 
     public void startGame() {
+//        newWall();
+        DELAY = 60;
         newApple();
         running = true;
         timer = new Timer(DELAY, this);
@@ -56,6 +63,14 @@ public class GamePanel extends JPanel implements ActionListener {
 //                }
                 g.setColor(Color.red);
                 g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
+
+            g.setColor(Color.white);
+            for (var i = 0; i < (wallX.length); i++) {
+                for (var ii = 0; ii < (wallY.length); ii++) {
+                    g.fillOval(wallX[i], wallY[ii], UNIT_SIZE, UNIT_SIZE);
+                }
+            }
+
 
                 for (int i = 0; i < bodyParts; i++) {
                     if (i == 0) {
@@ -79,7 +94,24 @@ public class GamePanel extends JPanel implements ActionListener {
     public void newApple() {
         appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
         appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
+        boolean appleInWall = false;
+        do {
+            for (var i = 0; i < wallX.length; i++) {
+                for (var ii = 0; ii < wallY.length; ii++) {
+                    if (appleX == wallX[i] && appleY == wallY[ii]) {
+                        appleInWall = true;
+                        appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
+                        appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
+                    }
+                }
+        }} while (appleInWall == true);
+
     }
+
+//    public void newWall() {
+//        wallX = new int[]{UNIT_SIZE * 10, UNIT_SIZE * 11, UNIT_SIZE * 12};
+//        wallY = new int[]{UNIT_SIZE * 10, UNIT_SIZE * 11, UNIT_SIZE * 12};
+//    }
 
 
     public void move() {
@@ -100,6 +132,9 @@ public class GamePanel extends JPanel implements ActionListener {
             bodyParts ++;
             applesEaten ++;
             newApple();
+            if (applesEaten == 10) {
+                DELAY -= 10;
+            }
         }
     }
 
@@ -110,6 +145,16 @@ public class GamePanel extends JPanel implements ActionListener {
                 running = false;
             }
         }
+        // checks if head touches a white wall.
+        for (var i = 0; i < wallX.length; i++) {
+            for (var ii = 0; ii < wallY.length; ii++) {
+                if (x[0] == wallX[i] && y[0] == wallY[ii]) {
+                    running = false;
+                }
+            }
+        }
+
+
         // checks if head touches left border.
         if (x[0] < 0) {
             running = false;
