@@ -2,9 +2,9 @@ import javax.swing.*;
 
 public class GameFrame extends JFrame {
 
-    GameFrame(boolean muren){
+    GameFrame(boolean muren, boolean wallMoves, String level, boolean walls){
 
-        this.add(new GamePanel(this, muren));
+        this.add(new GamePanel(this, muren, wallMoves, level, walls));
 //        this.setLayout(null);
         this.setTitle("snake");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

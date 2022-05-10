@@ -6,6 +6,8 @@ import java.util.Random;
 public class GamePanel extends JPanel implements ActionListener {
 
     boolean muren;
+    boolean wallMoves;
+    boolean walls;
     GameFrame gameFrame;
     static final int SCREEN_WIDTH = 1200;
     static final int SCREEN_HEIGHT = 700;
@@ -18,14 +20,9 @@ public class GamePanel extends JPanel implements ActionListener {
     int applesEaten;
     int appleX;
     int appleY;
-    int wallX[] = new int[]{
-            UNIT_SIZE * 1, UNIT_SIZE * 2, UNIT_SIZE * 3, UNIT_SIZE * 4, UNIT_SIZE * 5, UNIT_SIZE * 6,
-            UNIT_SIZE * 10, UNIT_SIZE * 11, UNIT_SIZE * 12, UNIT_SIZE * 13, UNIT_SIZE * 14, UNIT_SIZE * 15,
-            UNIT_SIZE * 20, UNIT_SIZE * 21, UNIT_SIZE * 22, UNIT_SIZE * 23, UNIT_SIZE * 24, UNIT_SIZE * 25,
-            UNIT_SIZE * 30, UNIT_SIZE * 31, UNIT_SIZE * 32, UNIT_SIZE * 33, UNIT_SIZE * 34, UNIT_SIZE * 35
-    };
+    int wallX[] = new int[]{};
     //    int wallX2[] = new int[]{UNIT_SIZE * 17, UNIT_SIZE * 18, UNIT_SIZE * 19, UNIT_SIZE * 20, UNIT_SIZE * 21, UNIT_SIZE * 22};
-    int wallY[] = new int[]{UNIT_SIZE * 10, UNIT_SIZE * 20};
+    int wallY[] = new int[]{};
 
     char direction = 'R';
     char nextDirection = 'R';
@@ -37,9 +34,19 @@ public class GamePanel extends JPanel implements ActionListener {
     boolean wallToRight = true;
     int wallSteps = 0;
 
+    Level1 level1 = new Level1();
+    Level2 level2 = new Level2();
 
-    GamePanel(GameFrame gameFrame, boolean muren) {
+
+    GamePanel(GameFrame gameFrame, boolean muren, boolean wallMoves, String level, boolean walls) {
         this.muren = muren;
+        this.wallMoves = wallMoves;
+        switch (level) {
+            case "level1" -> {wallX = level1.getWallX(); wallY = level1.getWallY();}
+            case "level2" -> {wallX = level2.getWallX(); wallY = level2.getWallY();}
+            default -> {}
+        }
+        this.walls = walls;
         this.gameFrame = gameFrame;
         random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -52,7 +59,7 @@ public class GamePanel extends JPanel implements ActionListener {
 
     public void startGame() {
 //        newWall();
-        DELAY = 65;
+        DELAY = 65; // Gamespeed FPS
         newApple();
         running = true;
         timer = new Timer(DELAY, this);
@@ -73,10 +80,11 @@ public class GamePanel extends JPanel implements ActionListener {
             g.setColor(Color.red);
             g.fillOval(appleX, appleY, UNIT_SIZE, UNIT_SIZE);
 
+            // Draw walls
             g.setColor(Color.white);
-            for (var i = 0; i < (wallX.length); i++) {
-                for (var ii = 0; ii < (wallY.length); ii++) {
-                    g.fillOval(wallX[i], wallY[ii], UNIT_SIZE, UNIT_SIZE);
+            for (int x : wallX) {
+                for (int y : wallY) {
+                    g.fillOval(x, y, UNIT_SIZE, UNIT_SIZE);
                 }
             }
 
@@ -91,6 +99,7 @@ public class GamePanel extends JPanel implements ActionListener {
                     g.fillOval(x[i], y[i], UNIT_SIZE, UNIT_SIZE);
                 }
             }
+            // Score board.
             g.setColor(Color.white);
             g.setFont(new Font("ink free", Font.BOLD, 35));
             FontMetrics metrics = getFontMetrics(g.getFont());
@@ -100,10 +109,11 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    public void newApple() {
+    public void newApple() { // Apple
         appleX = random.nextInt((int) (SCREEN_WIDTH / UNIT_SIZE)) * UNIT_SIZE;
         appleY = random.nextInt((int) (SCREEN_HEIGHT / UNIT_SIZE)) * UNIT_SIZE;
         boolean appleInWall = false;
+        // check if apple is not in the walls.
         do {
             for (var i = 0; i < wallX.length; i++) {
                 for (var ii = 0; ii < wallY.length; ii++) {
@@ -172,24 +182,37 @@ public class GamePanel extends JPanel implements ActionListener {
 
         // checks if head touches left border.
         if (x[0] < 0) {
-            x[0] = SCREEN_WIDTH - 25;
-//            running = false;
+            if (!walls) {
+                x[0] = SCREEN_WIDTH -25;
+            } else {
+                running = false;
+            }
         }
-        //check if head touches richt border
+        //check if head touches right border
         if (x[0] >= SCREEN_WIDTH) {
-            x[0] = 0;
-//            running = false;
+            if (!walls) {
+                x[0] = -25;
+            } else {
+                running = false;
+            }
         }
         // check if head touches top border
         if (y[0] < 0) {
-            y[0] = SCREEN_HEIGHT - 25;
-//            running = false;
+            if (!walls) {
+                y[0] = SCREEN_HEIGHT -25;
+            } else {
+                running = false;
+            }
         }
         // check if head touches bottom
         if (y[0] >= SCREEN_HEIGHT) {
-            y[0] = 0;
-//            running = false;
+            if (!walls) {
+                y[0] = -25;
+            } else {
+                running = false;
+            }
         }
+
 
         if (!running) {
             timer.stop();
@@ -239,25 +262,27 @@ public class GamePanel extends JPanel implements ActionListener {
             checkApple();
             checkCollisions();
 
-            ticks++;
-            if (ticks == 10) {
-                ticks = 0;
-                wallSteps++;
-                if (wallToRight) { // beweegt de muur naar rechts
-                    for (var i = 0; i < wallX.length; i++) {
-                        wallX[i] += 25;
-                        if (wallSteps == 10) {
-                            wallToRight = false;
-                            wallSteps = 0;
+            if (wallMoves) {
+                ticks++;
+                if (ticks == 10) {
+                    ticks = 0;
+                    wallSteps++;
+                    if (wallToRight) { // beweegt de muur naar rechts
+                        for (var i = 0; i < wallX.length; i++) {
+                            wallX[i] += 25;
+                            if (wallSteps == 10) {
+                                wallToRight = false;
+                                wallSteps = 0;
+                            }
                         }
-                    }
-                } else {
-                    for (var i = 0; i < wallX.length; i++) { // beweegt de muur naar links
+                    } else {
+                        for (var i = 0; i < wallX.length; i++) { // beweegt de muur naar links
 //                        wallToRight? (wallX[i] -= 25) : (wallX[i] += 25);
-                        wallX[i] -= 25;
-                        if (wallSteps == 10) {
-                            wallToRight = true;
-                            wallSteps = 0;
+                            wallX[i] -= 25;
+                            if (wallSteps == 10) {
+                                wallToRight = true;
+                                wallSteps = 0;
+                            }
                         }
                     }
                 }
